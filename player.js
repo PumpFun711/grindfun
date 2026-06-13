@@ -49,10 +49,10 @@ const Player = {
 
   findSurface(x, z) {
     const { h } = this.worldData;
-    for (let y = h - 1; y >= 0; y--) {
+    for (let y = h-1; y >= 0; y--) {
       if (World.getBlock(x, y, z) >= 0) return y;
     }
-    return 10;
+    return 5;
   },
 
   respawn() {
@@ -61,7 +61,7 @@ const Player = {
     this.y = this.findSurface(Math.floor(this.x), Math.floor(this.z)) + 2;
     this.velY = 0;
     this.onGround = false;
-    showToast('💀 Fell off the world! Respawning...');
+    showToast('💀 Fell off! Respawning...');
   },
 
   setupPointerLock() {
@@ -69,10 +69,7 @@ const Player = {
 
     document.getElementById('game-screen').addEventListener('click', (e) => {
       if (Game.shopOpen) return;
-      canvas.requestPointerLock =
-        canvas.requestPointerLock ||
-        canvas.mozRequestPointerLock ||
-        canvas.webkitRequestPointerLock;
+      canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock || canvas.webkitRequestPointerLock;
       if (canvas.requestPointerLock) canvas.requestPointerLock();
     });
 
@@ -85,11 +82,8 @@ const Player = {
       this.isPointerLocked = locked;
       const ctp = document.getElementById('click-to-play');
       if (!ctp) return;
-      if (locked) {
-        ctp.classList.add('hidden');
-      } else {
-        if (!Game.shopOpen) ctp.classList.remove('hidden');
-      }
+      if (locked) { ctp.classList.add('hidden'); }
+      else { if (!Game.shopOpen) ctp.classList.remove('hidden'); }
     };
 
     document.addEventListener('pointerlockchange', onLockChange);
@@ -101,13 +95,12 @@ const Player = {
       const sens = 0.0018;
       this.rotY -= e.movementX * sens;
       this.rotX -= e.movementY * sens;
-      this.rotX = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, this.rotX));
+      this.rotX = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, this.rotX));
     });
   },
 
   setupKeyboard() {
     window.addEventListener('keydown', (e) => {
-      // e.repeat = true means key is being held — ignore for jump
       if (e.code === 'Space' && !e.repeat) {
         e.preventDefault();
         if (this.onGround && this.jumpCooldown <= 0) {
@@ -118,28 +111,24 @@ const Player = {
       }
       this.keys[e.code] = true;
     });
-    window.addEventListener('keyup', (e) => {
-      this.keys[e.code] = false;
-    });
+    window.addEventListener('keyup', (e) => { this.keys[e.code] = false; });
   },
 
   buildPickaxe() {
     const group = new THREE.Group();
 
-    const handleGeo = new THREE.BoxGeometry(0.05, 0.05, 0.4);
     const handleMat = new THREE.MeshLambertMaterial({ color: 0xa07840 });
-    const handle = new THREE.Mesh(handleGeo, handleMat);
+    const headMat   = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
+
+    const handle = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.05,0.4), handleMat);
     handle.position.set(0, 0, -0.2);
     group.add(handle);
 
-    const headGeo = new THREE.BoxGeometry(0.22, 0.06, 0.06);
-    const headMat = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
-    const head = new THREE.Mesh(headGeo, headMat);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.06,0.06), headMat);
     head.position.set(0, 0.04, -0.38);
     group.add(head);
 
-    const tipGeo = new THREE.BoxGeometry(0.05, 0.1, 0.05);
-    const tip = new THREE.Mesh(tipGeo, headMat);
+    const tip = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.1,0.05), headMat);
     tip.position.set(0.1, 0, -0.4);
     group.add(tip);
 
@@ -153,9 +142,7 @@ const Player = {
     const colors = [0xa07840, 0xaaaaaa, 0xd4d4d4, 0xffd700, 0x4fc3f7, 0x00ff88];
     const color = colors[tier] || 0xaaaaaa;
     if (!this.pickaxeMesh) return;
-    this.pickaxeMesh.children.forEach((mesh, i) => {
-      if (i > 0) mesh.material.color.setHex(color);
-    });
+    this.pickaxeMesh.children.forEach((mesh,i) => { if(i>0) mesh.material.color.setHex(color); });
   },
 
   update() {
@@ -164,103 +151,73 @@ const Player = {
     this.applyGravity();
     this.animatePickaxe();
     this.updateCamera();
-
     if (this.y < -15) this.respawn();
-    const W = this.worldData.w;
-    const D = this.worldData.d;
-    if (this.x < -3 || this.x > W + 3 || this.z < -3 || this.z > D + 3) this.respawn();
+    const W = this.worldData.w, D = this.worldData.d;
+    if (this.x < -3 || this.x > W+3 || this.z < -3 || this.z > D+3) this.respawn();
   },
 
   handleMovement() {
     if (Game.shopOpen) return;
     const speed = this.keys['ShiftLeft'] ? this.SPRINT_SPEED : this.SPEED;
-    let dx = 0, dz = 0;
+    let dx=0, dz=0;
 
-    if (this.keys['KeyW'] || this.keys['ArrowUp'])    { dx -= Math.sin(this.rotY); dz -= Math.cos(this.rotY); }
-    if (this.keys['KeyS'] || this.keys['ArrowDown'])  { dx += Math.sin(this.rotY); dz += Math.cos(this.rotY); }
-    if (this.keys['KeyA'] || this.keys['ArrowLeft'])  { dx -= Math.cos(this.rotY); dz += Math.sin(this.rotY); }
-    if (this.keys['KeyD'] || this.keys['ArrowRight']) { dx += Math.cos(this.rotY); dz -= Math.sin(this.rotY); }
+    if (this.keys['KeyW']||this.keys['ArrowUp'])    { dx -= Math.sin(this.rotY); dz -= Math.cos(this.rotY); }
+    if (this.keys['KeyS']||this.keys['ArrowDown'])  { dx += Math.sin(this.rotY); dz += Math.cos(this.rotY); }
+    if (this.keys['KeyA']||this.keys['ArrowLeft'])  { dx -= Math.cos(this.rotY); dz += Math.sin(this.rotY); }
+    if (this.keys['KeyD']||this.keys['ArrowRight']) { dx += Math.cos(this.rotY); dz -= Math.sin(this.rotY); }
 
-    const moving = dx !== 0 || dz !== 0;
+    const moving = dx!==0||dz!==0;
     this.isWalking = moving;
 
     if (moving) {
-      const len = Math.sqrt(dx * dx + dz * dz);
-      dx = (dx / len) * speed;
-      dz = (dz / len) * speed;
-
-      const newX = this.x + dx;
-      if (!this.collidesAt(newX, this.y, this.z)) {
-        this.x = Math.max(0.3, Math.min(this.worldData.w - 0.3, newX));
-      }
-
-      const newZ = this.z + dz;
-      if (!this.collidesAt(this.x, this.y, newZ)) {
-        this.z = Math.max(0.3, Math.min(this.worldData.d - 0.3, newZ));
-      }
-
-      this.bobTime += 0.1;
-      this.bobOffset = Math.sin(this.bobTime) * 0.03;
+      const len = Math.sqrt(dx*dx+dz*dz);
+      dx=(dx/len)*speed; dz=(dz/len)*speed;
+      const newX=this.x+dx;
+      if (!this.collidesAt(newX,this.y,this.z)) this.x=Math.max(0.3,Math.min(this.worldData.w-0.3,newX));
+      const newZ=this.z+dz;
+      if (!this.collidesAt(this.x,this.y,newZ)) this.z=Math.max(0.3,Math.min(this.worldData.d-0.3,newZ));
+      this.bobTime+=0.1;
+      this.bobOffset=Math.sin(this.bobTime)*0.03;
     } else {
-      this.bobOffset *= 0.75;
+      this.bobOffset*=0.75;
     }
   },
 
   applyGravity() {
     this.velY += this.GRAVITY;
     if (this.velY < -0.5) this.velY = -0.5;
-
-    const newY = this.y + this.velY;
+    const newY = this.y+this.velY;
     const floorY = this.getFloorY();
-
     if (floorY > -900 && newY <= floorY) {
-      this.y = floorY;
-      this.velY = 0;
-      this.onGround = true;
+      this.y=floorY; this.velY=0; this.onGround=true;
     } else {
-      const ceilY = this.getCeilY();
-      if (newY + this.PLAYER_HEIGHT > ceilY) {
-        this.y = ceilY - this.PLAYER_HEIGHT;
-        this.velY = 0;
-      } else {
-        this.y = newY;
-        this.onGround = false;
-      }
+      const ceilY=this.getCeilY();
+      if (newY+this.PLAYER_HEIGHT>ceilY) { this.y=ceilY-this.PLAYER_HEIGHT; this.velY=0; }
+      else { this.y=newY; this.onGround=false; }
     }
   },
 
   collidesAt(x, y, z) {
-    const margin = 0.3;
-    for (let bx = Math.floor(x - margin); bx <= Math.floor(x + margin); bx++) {
-      for (let bz = Math.floor(z - margin); bz <= Math.floor(z + margin); bz++) {
-        for (let by = Math.floor(y); by <= Math.floor(y + this.PLAYER_HEIGHT); by++) {
-          if (World.getBlock(bx, by, bz) >= 0) return true;
-        }
-      }
-    }
+    const m=0.3;
+    for(let bx=Math.floor(x-m);bx<=Math.floor(x+m);bx++)
+      for(let bz=Math.floor(z-m);bz<=Math.floor(z+m);bz++)
+        for(let by=Math.floor(y);by<=Math.floor(y+this.PLAYER_HEIGHT);by++)
+          if(World.getBlock(bx,by,bz)>=0) return true;
     return false;
   },
 
   getFloorY() {
-    const margin = 0.3;
-    let floor = -999;
-    for (let bx = Math.floor(this.x - margin); bx <= Math.floor(this.x + margin); bx++) {
-      for (let bz = Math.floor(this.z - margin); bz <= Math.floor(this.z + margin); bz++) {
-        for (let by = Math.floor(this.y); by >= 0; by--) {
-          if (World.getBlock(bx, by, bz) >= 0) {
-            floor = Math.max(floor, by + 1);
-            break;
-          }
-        }
-      }
-    }
+    const m=0.3; let floor=-999;
+    for(let bx=Math.floor(this.x-m);bx<=Math.floor(this.x+m);bx++)
+      for(let bz=Math.floor(this.z-m);bz<=Math.floor(this.z+m);bz++)
+        for(let by=Math.floor(this.y);by>=0;by--)
+          if(World.getBlock(bx,by,bz)>=0){floor=Math.max(floor,by+1);break;}
     return floor;
   },
 
   getCeilY() {
-    for (let by = Math.floor(this.y + this.PLAYER_HEIGHT); by < this.worldData.h; by++) {
-      if (World.getBlock(Math.floor(this.x), by, Math.floor(this.z)) >= 0) return by;
-    }
+    for(let by=Math.floor(this.y+this.PLAYER_HEIGHT);by<this.worldData.h;by++)
+      if(World.getBlock(Math.floor(this.x),by,Math.floor(this.z))>=0) return by;
     return this.worldData.h;
   },
 
@@ -268,28 +225,27 @@ const Player = {
     if (!this.pickaxeMesh) return;
     const t = Date.now() * 0.001;
     if (this.isMining) {
-      this.pickaxeSwing += 0.25;
-      this.pickaxeMesh.rotation.x = 0.2 + Math.sin(this.pickaxeSwing) * 0.4;
-      this.pickaxeMesh.position.y = -0.28 + Math.abs(Math.sin(this.pickaxeSwing)) * 0.05;
+      // Slow natural swing — 0.06 instead of 0.25
+      this.pickaxeSwing += 0.06;
+      this.pickaxeMesh.rotation.x = 0.2 + Math.sin(this.pickaxeSwing) * 0.35;
+      this.pickaxeMesh.position.y = -0.28 + Math.abs(Math.sin(this.pickaxeSwing)) * 0.04;
     } else {
-      this.pickaxeMesh.rotation.x = 0.2 + Math.sin(t * 1.5) * 0.02;
-      this.pickaxeMesh.position.y = -0.28 + Math.sin(t * 1.5) * 0.008;
-      this.pickaxeMesh.rotation.z = this.isWalking ? 0.1 + Math.sin(t * 6) * 0.04 : 0.1;
+      // Idle bob
+      this.pickaxeSwing = 0;
+      this.pickaxeMesh.rotation.x = 0.2 + Math.sin(t*1.5)*0.015;
+      this.pickaxeMesh.position.y = -0.28 + Math.sin(t*1.5)*0.006;
+      this.pickaxeMesh.rotation.z = this.isWalking ? 0.1+Math.sin(t*6)*0.035 : 0.1;
     }
   },
 
   updateCamera() {
-    this.camera.position.set(
-      this.x,
-      this.y + this.EYE_HEIGHT + this.bobOffset,
-      this.z
-    );
+    this.camera.position.set(this.x, this.y+this.EYE_HEIGHT+this.bobOffset, this.z);
     this.camera.rotation.order = 'YXZ';
     this.camera.rotation.y = this.rotY;
     this.camera.rotation.x = this.rotX;
   },
 
   getPosition() {
-    return { x: this.x, y: this.y, z: this.z, rotY: this.rotY, isWalking: this.isWalking };
+    return { x:this.x, y:this.y, z:this.z, rotY:this.rotY, isWalking:this.isWalking };
   }
 };
