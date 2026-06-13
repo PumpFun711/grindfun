@@ -64,8 +64,8 @@ class Room {
       player.points += B.pts;
       player.totalBlocks++;
 
-      // Queue server-side respawn for ores
-      if (blockType >= 4) {
+      // Respawn ores server side
+      if (blockType >= 4 && blockType !== 13) {
         setTimeout(() => {
           if (getBlock(this.world, x, y, z) < 0) {
             setBlock(this.world, x, y, z, blockType);
@@ -107,7 +107,12 @@ class Room {
     return Array.from(this.players.values())
       .sort((a, b) => b.points - a.points)
       .slice(0, 10)
-      .map(p => ({ nickname: p.nickname, points: p.points, pickaxe: p.pickaxe, totalBlocks: p.totalBlocks }));
+      .map(p => ({
+        nickname: p.nickname,
+        points: p.points,
+        pickaxe: p.pickaxe,
+        totalBlocks: p.totalBlocks
+      }));
   }
 }
 
@@ -129,7 +134,9 @@ class RoomManager {
   removeRoom(roomId) { this.rooms.delete(roomId); }
   getAllRooms() { return Array.from(this.rooms.values()); }
   getRoomStats() {
-    return Array.from(this.rooms.values()).map(r => ({ name: r.name, players: r.getPlayerCount() }));
+    return Array.from(this.rooms.values()).map(r => ({
+      name: r.name, players: r.getPlayerCount()
+    }));
   }
 }
 
