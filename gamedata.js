@@ -1,17 +1,17 @@
 const BLOCKS = [
-  { name: 'Dirt',      color: 0x8B6914, baseHits: 1,   pts: 1,   rarity: 0.20 },
-  { name: 'Grass',     color: 0x5a8c3e, baseHits: 1,   pts: 1,   rarity: 0.18 },
-  { name: 'Sand',      color: 0xd9c47a, baseHits: 1,   pts: 1,   rarity: 0.12 },
-  { name: 'Wood',      color: 0xa0714a, baseHits: 3,   pts: 2,   rarity: 0.10 },
-  { name: 'Stone',     color: 0x888888, baseHits: 6,   pts: 3,   rarity: 0.12 },
-  { name: 'Coal',      color: 0x222222, baseHits: 10,  pts: 5,   rarity: 0.09 },
-  { name: 'Iron Ore',  color: 0xc0896e, baseHits: 18,  pts: 10,  rarity: 0.07 },
-  { name: 'Gold Ore',  color: 0xd4af37, baseHits: 28,  pts: 20,  rarity: 0.05 },
-  { name: 'Redstone',  color: 0xcc2200, baseHits: 24,  pts: 15,  rarity: 0.04 },
-  { name: 'Lapis',     color: 0x1a3db5, baseHits: 24,  pts: 18,  rarity: 0.03 },
-  { name: 'Emerald',   color: 0x00b865, baseHits: 40,  pts: 40,  rarity: 0.02 },
-  { name: 'Diamond',   color: 0x4fc3f7, baseHits: 60,  pts: 75,  rarity: 0.015 },
-  { name: 'GrindFun',  color: 0x00ff88, baseHits: 120, pts: 250, rarity: 0.005 },
+  { name: 'Dirt',      color: 0x8B6914, baseHits: 8,   pts: 1,   rarity: 0.20 },
+  { name: 'Grass',     color: 0x5a8c3e, baseHits: 8,   pts: 1,   rarity: 0.18 },
+  { name: 'Sand',      color: 0xd9c47a, baseHits: 6,   pts: 1,   rarity: 0.12 },
+  { name: 'Wood',      color: 0xa0714a, baseHits: 14,  pts: 2,   rarity: 0.10 },
+  { name: 'Stone',     color: 0x888888, baseHits: 22,  pts: 3,   rarity: 0.12 },
+  { name: 'Coal',      color: 0x222222, baseHits: 32,  pts: 5,   rarity: 0.09 },
+  { name: 'Iron Ore',  color: 0xc0896e, baseHits: 50,  pts: 10,  rarity: 0.07 },
+  { name: 'Gold Ore',  color: 0xd4af37, baseHits: 80,  pts: 20,  rarity: 0.05 },
+  { name: 'Redstone',  color: 0xcc2200, baseHits: 70,  pts: 15,  rarity: 0.04 },
+  { name: 'Lapis',     color: 0x1a3db5, baseHits: 70,  pts: 18,  rarity: 0.03 },
+  { name: 'Emerald',   color: 0x00b865, baseHits: 110, pts: 40,  rarity: 0.02 },
+  { name: 'Diamond',   color: 0x4fc3f7, baseHits: 160, pts: 75,  rarity: 0.015 },
+  { name: 'GrindFun',  color: 0x00ff88, baseHits: 300, pts: 250, rarity: 0.005 },
 ];
 
 const PICKS = [
@@ -43,28 +43,27 @@ function generateWorld() {
         let blockType;
 
         if (depth === 0) {
-          blockType = 1; // Grass
+          blockType = 1;
         } else if (depth <= 3) {
-          blockType = 0; // Dirt
+          blockType = 0;
         } else {
           const roll = Math.random();
           const depthRatio = y / surfaceY;
 
-          if      (roll < 0.005 && depthRatio < 0.4) blockType = 12; // GrindFun
-          else if (roll < 0.015 && depthRatio < 0.5) blockType = 11; // Diamond
-          else if (roll < 0.035 && depthRatio < 0.6) blockType = 10; // Emerald
-          else if (roll < 0.055) blockType = 9;  // Lapis
-          else if (roll < 0.08)  blockType = 8;  // Redstone
-          else if (roll < 0.12)  blockType = 7;  // Gold
-          else if (roll < 0.18)  blockType = 6;  // Iron
-          else if (roll < 0.26)  blockType = 5;  // Coal
-          else                   blockType = 4;  // Stone
+          if      (roll < 0.005 && depthRatio < 0.4) blockType = 12;
+          else if (roll < 0.015 && depthRatio < 0.5) blockType = 11;
+          else if (roll < 0.035 && depthRatio < 0.6) blockType = 10;
+          else if (roll < 0.055) blockType = 9;
+          else if (roll < 0.08)  blockType = 8;
+          else if (roll < 0.12)  blockType = 7;
+          else if (roll < 0.18)  blockType = 6;
+          else if (roll < 0.26)  blockType = 5;
+          else                   blockType = 4;
         }
 
         world[idx(x, y, z)] = blockType;
       }
 
-      // Trees
       if (Math.random() < 0.04) {
         const treeHeight = 4 + Math.floor(Math.random() * 3);
         for (let ty = surfaceY + 1; ty <= surfaceY + treeHeight; ty++) {
