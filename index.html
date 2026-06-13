@@ -49,12 +49,12 @@
   <section id="how">
     <div class="section-label">How it works</div>
     <div class="section-title">MINE. EARN. GRIND.</div>
-    <div class="section-sub">Create your wallet, pick your name, enter a server and start mining.</div>
+    <div class="section-sub">Create your wallet once, import to Phantom, then connect every time.</div>
     <div class="steps">
-      <div class="step"><div class="step-num">01</div><span class="step-icon">🔑</span><div class="step-title">Create Your Wallet</div><div class="step-desc">Generate a free Solana wallet in seconds. Save your private key — it's your login forever.</div></div>
-      <div class="step"><div class="step-num">02</div><span class="step-icon">⛏</span><div class="step-title">Mine Blocks</div><div class="step-desc">Walk around in first person, look at blocks and hold left click to mine. Rarer blocks give more points.</div></div>
-      <div class="step"><div class="step-num">03</div><span class="step-icon">💎</span><div class="step-title">Earn Points</div><div class="step-desc">Every block gives points. Diamond and $GRINDFUN Ore give massive rewards.</div></div>
-      <div class="step"><div class="step-num">04</div><span class="step-icon">🏆</span><div class="step-title">Get Rewarded</div><div class="step-desc">Top players earn $GRINDFUN token rewards sent directly to their in-game wallet.</div></div>
+      <div class="step"><div class="step-num">01</div><span class="step-icon">🔑</span><div class="step-title">Create Your Wallet</div><div class="step-desc">Generate a free Solana wallet on your first visit. Save your private key — import it into Phantom once.</div></div>
+      <div class="step"><div class="step-num">02</div><span class="step-icon">👻</span><div class="step-title">Connect Phantom</div><div class="step-desc">Every login after — just click Connect Phantom. One click and you're in.</div></div>
+      <div class="step"><div class="step-num">03</div><span class="step-icon">⛏</span><div class="step-title">Mine & Earn</div><div class="step-desc">Walk around in first person, mine blocks, earn points. Rarer blocks give more rewards.</div></div>
+      <div class="step"><div class="step-num">04</div><span class="step-icon">🏆</span><div class="step-title">Get Rewarded</div><div class="step-desc">Top players earn $GRINDFUN tokens sent directly to their wallet.</div></div>
     </div>
   </section>
 
@@ -96,7 +96,7 @@
     <div class="footer-copy">GrindFun — built by grinders, for grinders.</div>
   </footer>
 
-  <!-- ── AUTH MODAL — CREATE OR LOGIN ── -->
+  <!-- ── AUTH MODAL ── -->
   <div id="modal-auth" class="modal-overlay">
     <div class="modal modal-auth-box">
 
@@ -104,16 +104,20 @@
       <div id="auth-step-choose" class="auth-step active">
         <div class="auth-logo">⛏ GRINDFUN</div>
         <div class="auth-title">Welcome</div>
-        <div class="auth-sub">New here or returning grinder?</div>
+        <div class="auth-sub">First time here? Create a wallet. Already have one? Connect Phantom.</div>
         <button class="btn-auth-primary" id="btn-go-create">🔑 Create New Wallet</button>
-        <button class="btn-auth-secondary" id="btn-go-login">↩ Login with Private Key</button>
+        <div class="auth-divider">— returning player —</div>
+        <button class="btn-phantom" id="btn-phantom-connect">
+          👻 Connect Phantom Wallet
+        </button>
+        <div class="auth-phantom-note">Import your GrindFun private key into Phantom first, then connect here.</div>
       </div>
 
-      <!-- Step 2a: Create wallet -->
+      <!-- Step 2: Create wallet + show key ONCE -->
       <div id="auth-step-create" class="auth-step">
         <div class="auth-back" id="btn-back-create">← Back</div>
         <div class="auth-title">Create Wallet</div>
-        <div class="auth-sub">Enter a nickname then generate your wallet.</div>
+        <div class="auth-sub">Enter a nickname then generate your free Solana wallet.</div>
         <div class="modal-field">
           <label>Nickname</label>
           <input type="text" id="create-nickname" maxlength="16" placeholder="EnterYourName"/>
@@ -125,41 +129,57 @@
         <button class="btn-auth-primary" id="btn-generate-wallet">⚡ Generate Wallet</button>
       </div>
 
-      <!-- Step 2b: Show seed phrase — ONCE -->
+      <!-- Step 3: Show private key ONCE -->
       <div id="auth-step-seed" class="auth-step">
         <div class="auth-title" style="color:#ff4444">⚠️ SAVE YOUR PRIVATE KEY</div>
-        <div class="auth-sub" style="color:rgba(255,100,100,0.8)">This is shown <strong>ONCE</strong>. If you lose it, your wallet is gone forever. We cannot recover it.</div>
+        <div class="auth-sub" style="color:rgba(255,120,120,0.85)">
+          Shown <strong>ONCE</strong>. Copy it and import into Phantom.<br/>
+          If you lose it, your wallet is gone forever.
+        </div>
         <div class="seed-box" id="seed-display"></div>
         <div class="wallet-addr-box">
           <div class="wallet-addr-label">Your Wallet Address (public)</div>
           <div class="wallet-addr-val" id="wallet-addr-display"></div>
         </div>
+        <div class="phantom-import-steps">
+          <div class="phantom-step">1. Copy your private key above</div>
+          <div class="phantom-step">2. Open Phantom → Add / Connect Wallet</div>
+          <div class="phantom-step">3. Choose "Import Private Key"</div>
+          <div class="phantom-step">4. Paste your key → done</div>
+        </div>
         <div class="seed-confirm-row">
           <input type="checkbox" id="seed-confirm-check"/>
-          <label for="seed-confirm-check">I have saved my private key in a safe place</label>
+          <label for="seed-confirm-check">I have saved my private key and imported it into Phantom</label>
         </div>
-        <button class="btn-auth-primary" id="btn-confirm-seed" disabled>ENTER GAME ▶</button>
+        <button class="btn-auth-primary" id="btn-confirm-seed" disabled>
+          👻 Now Connect Phantom ▶
+        </button>
       </div>
 
-      <!-- Step 3: Login with private key -->
-      <div id="auth-step-login" class="auth-step">
-        <div class="auth-back" id="btn-back-login">← Back</div>
-        <div class="auth-title">Login</div>
-        <div class="auth-sub">Paste your private key to restore your wallet and enter the game.</div>
-        <div class="modal-field">
-          <label>Private Key</label>
-          <textarea id="login-privkey" rows="3" placeholder="Paste your private key here..."></textarea>
+      <!-- Phantom connecting state -->
+      <div id="auth-step-connecting" class="auth-step">
+        <div class="auth-title">Connecting...</div>
+        <div class="auth-sub">Check your Phantom wallet and approve the connection.</div>
+        <div class="connecting-spinner">👻</div>
+      </div>
+
+      <!-- Nickname after phantom connect -->
+      <div id="auth-step-nickname" class="auth-step">
+        <div class="auth-title">Almost in!</div>
+        <div class="auth-sub">Choose a nickname and color for this session.</div>
+        <div class="wallet-addr-box" style="margin-bottom:8px">
+          <div class="wallet-addr-label">Connected Wallet</div>
+          <div class="wallet-addr-val" id="connected-addr-display"></div>
         </div>
         <div class="modal-field">
-          <label>Nickname (can change)</label>
-          <input type="text" id="login-nickname" maxlength="16" placeholder="EnterYourName"/>
+          <label>Nickname</label>
+          <input type="text" id="phantom-nickname" maxlength="16" placeholder="EnterYourName"/>
         </div>
         <div class="modal-field">
           <label>Player Color</label>
-          <div class="color-row" id="login-skin-colors"></div>
+          <div class="color-row" id="phantom-skin-colors"></div>
         </div>
-        <div class="modal-err" id="login-error">❌ Invalid private key. Please check and try again.</div>
-        <button class="btn-auth-primary" id="btn-login-enter">ENTER GAME ▶</button>
+        <button class="btn-auth-primary" id="btn-phantom-enter">ENTER GAME ▶</button>
       </div>
 
     </div>
@@ -167,6 +187,7 @@
 
   <!-- ── GAME SCREEN ── -->
   <div id="game-screen">
+
     <div id="game-hud">
       <div class="hud-left">
         <div class="hud-logo">⛏ GRIND<span>FUN</span></div>
@@ -248,11 +269,11 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <div id="toast"></div>
 
-  <!-- Solana web3 from CDN — generates wallets in browser -->
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
