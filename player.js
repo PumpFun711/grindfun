@@ -6,6 +6,7 @@ const Player = {
   x: 8, y: 20, z: 8,
   velY: 0,
   onGround: false,
+  jumpCooldown: 0,
 
   rotY: 0,
   rotX: 0,
@@ -15,10 +16,10 @@ const Player = {
   nickname: 'Player',
   skinColor: '#00ff88',
 
-  SPEED: 0.025,
-  SPRINT_SPEED: 0.045,
-  JUMP_FORCE: 0.13,
-  GRAVITY: -0.008,
+  SPEED: 0.04,
+  SPRINT_SPEED: 0.072,
+  JUMP_FORCE: 0.22,
+  GRAVITY: -0.018,
   PLAYER_HEIGHT: 1.7,
   EYE_HEIGHT: 1.6,
 
@@ -106,14 +107,16 @@ const Player = {
 
   setupKeyboard() {
     window.addEventListener('keydown', (e) => {
-      this.keys[e.code] = true;
-      if (e.code === 'Space') {
+      // e.repeat = true means key is being held — ignore for jump
+      if (e.code === 'Space' && !e.repeat) {
         e.preventDefault();
-        if (this.onGround) {
+        if (this.onGround && this.jumpCooldown <= 0) {
           this.velY = this.JUMP_FORCE;
           this.onGround = false;
+          this.jumpCooldown = 20;
         }
       }
+      this.keys[e.code] = true;
     });
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
@@ -142,7 +145,6 @@ const Player = {
 
     group.position.set(0.28, -0.28, -0.45);
     group.rotation.set(0.2, -0.4, 0.1);
-
     this.pickaxeMesh = group;
     this.camera.add(group);
   },
@@ -157,22 +159,16 @@ const Player = {
   },
 
   update() {
+    if (this.jumpCooldown > 0) this.jumpCooldown--;
     this.handleMovement();
     this.applyGravity();
     this.animatePickaxe();
     this.updateCamera();
 
-    // Fall off world — respawn
-    if (this.y < -15) {
-      this.respawn();
-    }
-
-    // Fall off edges — clamp and respawn
+    if (this.y < -15) this.respawn();
     const W = this.worldData.w;
     const D = this.worldData.d;
-    if (this.x < -2 || this.x > W + 2 || this.z < -2 || this.z > D + 2) {
-      this.respawn();
-    }
+    if (this.x < -3 || this.x > W + 3 || this.z < -3 || this.z > D + 3) this.respawn();
   },
 
   handleMovement() {
@@ -212,7 +208,7 @@ const Player = {
 
   applyGravity() {
     this.velY += this.GRAVITY;
-    if (this.velY < -0.4) this.velY = -0.4;
+    if (this.velY < -0.5) this.velY = -0.5;
 
     const newY = this.y + this.velY;
     const floorY = this.getFloorY();
