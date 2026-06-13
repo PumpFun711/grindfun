@@ -15,15 +15,14 @@ const Player = {
   nickname: 'Player',
   skinColor: '#00ff88',
 
-  SPEED: 0.08,
-  SPRINT_SPEED: 0.14,
-  JUMP_FORCE: 0.18,
-  GRAVITY: -0.012,
+  SPEED: 0.025,
+  SPRINT_SPEED: 0.045,
+  JUMP_FORCE: 0.13,
+  GRAVITY: -0.008,
   PLAYER_HEIGHT: 1.7,
   EYE_HEIGHT: 1.6,
 
   keys: {},
-
   pickaxeMesh: null,
   pickaxeSwing: 0,
   isMining: false,
@@ -55,11 +54,20 @@ const Player = {
     return 10;
   },
 
+  respawn() {
+    this.x = 8 + Math.random() * 4;
+    this.z = 8 + Math.random() * 4;
+    this.y = this.findSurface(Math.floor(this.x), Math.floor(this.z)) + 2;
+    this.velY = 0;
+    this.onGround = false;
+    showToast('💀 Fell off the world! Respawning...');
+  },
+
   setupPointerLock() {
     const canvas = document.getElementById('game-canvas');
 
-    // Click anywhere on game screen to lock
-    document.getElementById('game-screen').addEventListener('click', () => {
+    document.getElementById('game-screen').addEventListener('click', (e) => {
+      if (Game.shopOpen) return;
       canvas.requestPointerLock =
         canvas.requestPointerLock ||
         canvas.mozRequestPointerLock ||
@@ -67,7 +75,6 @@ const Player = {
       if (canvas.requestPointerLock) canvas.requestPointerLock();
     });
 
-    // Handle lock change
     const onLockChange = () => {
       const locked = !!(
         document.pointerLockElement === canvas ||
@@ -80,7 +87,7 @@ const Player = {
       if (locked) {
         ctp.classList.add('hidden');
       } else {
-        ctp.classList.remove('hidden');
+        if (!Game.shopOpen) ctp.classList.remove('hidden');
       }
     };
 
@@ -88,14 +95,6 @@ const Player = {
     document.addEventListener('mozpointerlockchange', onLockChange);
     document.addEventListener('webkitpointerlockchange', onLockChange);
 
-    document.addEventListener('pointerlockerror', () => {
-      console.warn('[PointerLock] Error — try clicking again');
-    });
-    document.addEventListener('mozpointerlockerror', () => {
-      console.warn('[PointerLock] Mozilla error');
-    });
-
-    // Mouse look
     document.addEventListener('mousemove', (e) => {
       if (!this.isPointerLocked) return;
       const sens = 0.0018;
@@ -124,21 +123,18 @@ const Player = {
   buildPickaxe() {
     const group = new THREE.Group();
 
-    // Handle
     const handleGeo = new THREE.BoxGeometry(0.05, 0.05, 0.4);
     const handleMat = new THREE.MeshLambertMaterial({ color: 0xa07840 });
     const handle = new THREE.Mesh(handleGeo, handleMat);
     handle.position.set(0, 0, -0.2);
     group.add(handle);
 
-    // Head
     const headGeo = new THREE.BoxGeometry(0.22, 0.06, 0.06);
     const headMat = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
     const head = new THREE.Mesh(headGeo, headMat);
     head.position.set(0, 0.04, -0.38);
     group.add(head);
 
-    // Tip
     const tipGeo = new THREE.BoxGeometry(0.05, 0.1, 0.05);
     const tip = new THREE.Mesh(tipGeo, headMat);
     tip.position.set(0.1, 0, -0.4);
@@ -165,9 +161,22 @@ const Player = {
     this.applyGravity();
     this.animatePickaxe();
     this.updateCamera();
+
+    // Fall off world — respawn
+    if (this.y < -15) {
+      this.respawn();
+    }
+
+    // Fall off edges — clamp and respawn
+    const W = this.worldData.w;
+    const D = this.worldData.d;
+    if (this.x < -2 || this.x > W + 2 || this.z < -2 || this.z > D + 2) {
+      this.respawn();
+    }
   },
 
   handleMovement() {
+    if (Game.shopOpen) return;
     const speed = this.keys['ShiftLeft'] ? this.SPRINT_SPEED : this.SPEED;
     let dx = 0, dz = 0;
 
@@ -185,25 +194,30 @@ const Player = {
       dz = (dz / len) * speed;
 
       const newX = this.x + dx;
-      if (!this.collidesAt(newX, this.y, this.z)) this.x = newX;
+      if (!this.collidesAt(newX, this.y, this.z)) {
+        this.x = Math.max(0.3, Math.min(this.worldData.w - 0.3, newX));
+      }
 
       const newZ = this.z + dz;
-      if (!this.collidesAt(this.x, this.y, newZ)) this.z = newZ;
+      if (!this.collidesAt(this.x, this.y, newZ)) {
+        this.z = Math.max(0.3, Math.min(this.worldData.d - 0.3, newZ));
+      }
 
-      // Head bob
-      this.bobTime += 0.15;
-      this.bobOffset = Math.sin(this.bobTime) * 0.04;
+      this.bobTime += 0.1;
+      this.bobOffset = Math.sin(this.bobTime) * 0.03;
     } else {
-      this.bobOffset *= 0.85;
+      this.bobOffset *= 0.75;
     }
   },
 
   applyGravity() {
     this.velY += this.GRAVITY;
+    if (this.velY < -0.4) this.velY = -0.4;
+
     const newY = this.y + this.velY;
     const floorY = this.getFloorY();
 
-    if (newY <= floorY) {
+    if (floorY > -900 && newY <= floorY) {
       this.y = floorY;
       this.velY = 0;
       this.onGround = true;
@@ -233,7 +247,7 @@ const Player = {
 
   getFloorY() {
     const margin = 0.3;
-    let floor = 0;
+    let floor = -999;
     for (let bx = Math.floor(this.x - margin); bx <= Math.floor(this.x + margin); bx++) {
       for (let bz = Math.floor(this.z - margin); bz <= Math.floor(this.z + margin); bz++) {
         for (let by = Math.floor(this.y); by >= 0; by--) {
@@ -264,9 +278,7 @@ const Player = {
     } else {
       this.pickaxeMesh.rotation.x = 0.2 + Math.sin(t * 1.5) * 0.02;
       this.pickaxeMesh.position.y = -0.28 + Math.sin(t * 1.5) * 0.008;
-      this.pickaxeMesh.rotation.z = this.isWalking
-        ? 0.1 + Math.sin(t * 6) * 0.04
-        : 0.1;
+      this.pickaxeMesh.rotation.z = this.isWalking ? 0.1 + Math.sin(t * 6) * 0.04 : 0.1;
     }
   },
 
@@ -282,12 +294,6 @@ const Player = {
   },
 
   getPosition() {
-    return {
-      x: this.x,
-      y: this.y,
-      z: this.z,
-      rotY: this.rotY,
-      isWalking: this.isWalking
-    };
+    return { x: this.x, y: this.y, z: this.z, rotY: this.rotY, isWalking: this.isWalking };
   }
 };
