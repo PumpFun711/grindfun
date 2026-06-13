@@ -39,9 +39,10 @@ class Room {
       walletAddress: data.walletAddress || 'unknown',
       x: data.x, y: data.y, z: data.z,
       rotY: 0,
-      points: 0,
-      totalBlocks: 0,
-      pickaxe: 0,
+      // Use saved progress if available
+      points:      data.points      || 0,
+      pickaxe:     data.pickaxe     || 0,
+      totalBlocks: data.totalBlocks || 0,
       isWalking: false,
       joinedAt: Date.now()
     });
@@ -80,7 +81,6 @@ class Room {
       player.points += B.pts;
       player.totalBlocks++;
 
-      // Respawn as random block after 10 seconds
       setTimeout(() => {
         if (getBlock(this.world, x, y, z) < 0) {
           const newType = pickRespawnBlock();
