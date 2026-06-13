@@ -6,30 +6,31 @@ const Network = {
   connect() {
     this.socket = io();
 
-    this.socket.on('connect', () => {
+    this.socket.on('connect', ()=>{
       this.connected = true;
-      this.playerId = this.socket.id;
+      this.playerId  = this.socket.id;
       console.log('[Network] Connected:', this.playerId);
     });
 
-    this.socket.on('disconnect', () => {
+    this.socket.on('disconnect', ()=>{
       this.connected = false;
       showToast('❌ Disconnected. Reconnecting...');
     });
 
-    this.socket.on('gameError',           (data) => { showToast('❌ '+data.message); });
-    this.socket.on('init',                (data) => { Game.onInit(data); });
-    this.socket.on('playerJoined',        (data) => { Game.onPlayerJoined(data); });
-    this.socket.on('playerMoved',         (data) => { Game.onPlayerMoved(data); });
-    this.socket.on('playerLeft',          (data) => { Game.onPlayerLeft(data); });
-    this.socket.on('blockBroken',         (data) => { Game.onBlockBroken(data); });
-    this.socket.on('blockHit',            (data) => { Game.onBlockHit(data); });
-    this.socket.on('pickaxeUpgraded',     (data) => { Game.onPickaxeUpgraded(data); });
-    this.socket.on('playerPickaxeChanged',(data) => { Game.onPlayerPickaxeChanged(data); });
-    this.socket.on('playerMining',        (data) => { Multiplayer.showPlayerMining(data.id, data.isMining); });
-    this.socket.on('leaderboard',         (data) => { HUD.updateLeaderboard(data); });
-    this.socket.on('playerCount',         (count) => {
-      document.getElementById('hud-online').textContent = count + '/60';
+    this.socket.on('gameError',           (d)=>{ showToast('❌ '+d.message); });
+    this.socket.on('init',                (d)=>{ Game.onInit(d); });
+    this.socket.on('progressLoaded',      (d)=>{ Game.onProgressLoaded(d); });
+    this.socket.on('playerJoined',        (d)=>{ Game.onPlayerJoined(d); });
+    this.socket.on('playerMoved',         (d)=>{ Game.onPlayerMoved(d); });
+    this.socket.on('playerLeft',          (d)=>{ Game.onPlayerLeft(d); });
+    this.socket.on('blockBroken',         (d)=>{ Game.onBlockBroken(d); });
+    this.socket.on('blockHit',            (d)=>{ Game.onBlockHit(d); });
+    this.socket.on('pickaxeUpgraded',     (d)=>{ Game.onPickaxeUpgraded(d); });
+    this.socket.on('playerPickaxeChanged',(d)=>{ Game.onPlayerPickaxeChanged(d); });
+    this.socket.on('playerMining',        (d)=>{ Multiplayer.showPlayerMining(d.id, d.isMining); });
+    this.socket.on('leaderboard',         (d)=>{ HUD.updateLeaderboard(d); });
+    this.socket.on('playerCount',         (c)=>{
+      document.getElementById('hud-online').textContent = c+'/60';
     });
   },
 
@@ -42,14 +43,14 @@ const Network = {
     });
   },
 
-  move(x, y, z, rotY, isWalking) {
+  move(x,y,z,rotY,isWalking) {
     if (!this.socket) return;
-    this.socket.emit('move', { x, y, z, rotY, isWalking });
+    this.socket.emit('move', {x,y,z,rotY,isWalking});
   },
 
-  mineBlock(x, y, z) {
+  mineBlock(x,y,z) {
     if (!this.socket) return;
-    this.socket.emit('mineBlock', { x, y, z });
+    this.socket.emit('mineBlock', {x,y,z});
   },
 
   startMining() {
@@ -64,7 +65,7 @@ const Network = {
 
   buyPickaxe(tier) {
     if (!this.socket) return;
-    this.socket.emit('buyPickaxe', { tier });
+    this.socket.emit('buyPickaxe', {tier});
   },
 
   getLeaderboard() {
