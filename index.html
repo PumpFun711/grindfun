@@ -33,7 +33,7 @@
       <div class="hero-eyebrow">First Person Browser Mining Game</div>
       <div class="hero-title">GRIND<span class="hero-title-gc">FUN</span></div>
       <div class="hero-ticker">$GRINDFUN</div>
-      <div class="hero-sub">Jump in, mine blocks, earn points and upgrade your pickaxe to the legendary $GRINDFUN tier. 60 players per server.</div>
+      <div class="hero-sub">Mine blocks, earn points and upgrade your pickaxe to the legendary $GRINDFUN tier. 60 players per server.</div>
       <div class="hero-btns">
         <button class="btn-play" id="btn-play-now">▶ PLAY NOW — FREE</button>
         <button class="btn-spectate" id="btn-spectate">SPECTATE</button>
@@ -49,12 +49,12 @@
   <section id="how">
     <div class="section-label">How it works</div>
     <div class="section-title">MINE. EARN. GRIND.</div>
-    <div class="section-sub">Jump straight in — no wallet needed. Pick your name, enter a server and start mining.</div>
+    <div class="section-sub">Create your wallet, pick your name, enter a server and start mining.</div>
     <div class="steps">
-      <div class="step"><div class="step-num">01</div><span class="step-icon">🎮</span><div class="step-title">Create Your Character</div><div class="step-desc">Pick a nickname and jump straight into a server. No wallet, no signup — just play.</div></div>
-      <div class="step"><div class="step-num">02</div><span class="step-icon">⛏</span><div class="step-title">Mine Blocks</div><div class="step-desc">Walk around in first person, look at blocks and hold left click to mine. Rarer blocks are deeper underground.</div></div>
-      <div class="step"><div class="step-num">03</div><span class="step-icon">💎</span><div class="step-title">Earn Points</div><div class="step-desc">Every block gives you points. Rare ores like Diamond and $GRINDFUN Ore give massive point rewards.</div></div>
-      <div class="step"><div class="step-num">04</div><span class="step-icon">🏆</span><div class="step-title">Upgrade & Dominate</div><div class="step-desc">Spend points on better pickaxes. The $GRINDFUN pickaxe mines 20x faster. Climb the server leaderboard.</div></div>
+      <div class="step"><div class="step-num">01</div><span class="step-icon">🔑</span><div class="step-title">Create Your Wallet</div><div class="step-desc">Generate a free Solana wallet in seconds. Save your private key — it's your login forever.</div></div>
+      <div class="step"><div class="step-num">02</div><span class="step-icon">⛏</span><div class="step-title">Mine Blocks</div><div class="step-desc">Walk around in first person, look at blocks and hold left click to mine. Rarer blocks give more points.</div></div>
+      <div class="step"><div class="step-num">03</div><span class="step-icon">💎</span><div class="step-title">Earn Points</div><div class="step-desc">Every block gives points. Diamond and $GRINDFUN Ore give massive rewards.</div></div>
+      <div class="step"><div class="step-num">04</div><span class="step-icon">🏆</span><div class="step-title">Get Rewarded</div><div class="step-desc">Top players earn $GRINDFUN token rewards sent directly to their in-game wallet.</div></div>
     </div>
   </section>
 
@@ -96,25 +96,77 @@
     <div class="footer-copy">GrindFun — built by grinders, for grinders.</div>
   </footer>
 
-  <div id="modal-char" class="modal-overlay">
-    <div class="modal">
-      <button class="modal-close" id="modal-char-close">×</button>
-      <h2>⛏ JOIN SERVER</h2>
-      <p>Pick a nickname and jump straight in. No wallet needed.</p>
-      <div class="modal-field">
-        <label>Nickname</label>
-        <input type="text" id="char-nickname" maxlength="16" placeholder="EnterYourName"/>
+  <!-- ── AUTH MODAL — CREATE OR LOGIN ── -->
+  <div id="modal-auth" class="modal-overlay">
+    <div class="modal modal-auth-box">
+
+      <!-- Step 1: Choose -->
+      <div id="auth-step-choose" class="auth-step active">
+        <div class="auth-logo">⛏ GRINDFUN</div>
+        <div class="auth-title">Welcome</div>
+        <div class="auth-sub">New here or returning grinder?</div>
+        <button class="btn-auth-primary" id="btn-go-create">🔑 Create New Wallet</button>
+        <button class="btn-auth-secondary" id="btn-go-login">↩ Login with Private Key</button>
       </div>
-      <div class="modal-field">
-        <label>Player Color</label>
-        <div class="color-row" id="skin-colors"></div>
+
+      <!-- Step 2a: Create wallet -->
+      <div id="auth-step-create" class="auth-step">
+        <div class="auth-back" id="btn-back-create">← Back</div>
+        <div class="auth-title">Create Wallet</div>
+        <div class="auth-sub">Enter a nickname then generate your wallet.</div>
+        <div class="modal-field">
+          <label>Nickname</label>
+          <input type="text" id="create-nickname" maxlength="16" placeholder="EnterYourName"/>
+        </div>
+        <div class="modal-field">
+          <label>Player Color</label>
+          <div class="color-row" id="create-skin-colors"></div>
+        </div>
+        <button class="btn-auth-primary" id="btn-generate-wallet">⚡ Generate Wallet</button>
       </div>
-      <button class="btn-modal" id="btn-enter-world">ENTER SERVER ▶</button>
+
+      <!-- Step 2b: Show seed phrase — ONCE -->
+      <div id="auth-step-seed" class="auth-step">
+        <div class="auth-title" style="color:#ff4444">⚠️ SAVE YOUR PRIVATE KEY</div>
+        <div class="auth-sub" style="color:rgba(255,100,100,0.8)">This is shown <strong>ONCE</strong>. If you lose it, your wallet is gone forever. We cannot recover it.</div>
+        <div class="seed-box" id="seed-display"></div>
+        <div class="wallet-addr-box">
+          <div class="wallet-addr-label">Your Wallet Address (public)</div>
+          <div class="wallet-addr-val" id="wallet-addr-display"></div>
+        </div>
+        <div class="seed-confirm-row">
+          <input type="checkbox" id="seed-confirm-check"/>
+          <label for="seed-confirm-check">I have saved my private key in a safe place</label>
+        </div>
+        <button class="btn-auth-primary" id="btn-confirm-seed" disabled>ENTER GAME ▶</button>
+      </div>
+
+      <!-- Step 3: Login with private key -->
+      <div id="auth-step-login" class="auth-step">
+        <div class="auth-back" id="btn-back-login">← Back</div>
+        <div class="auth-title">Login</div>
+        <div class="auth-sub">Paste your private key to restore your wallet and enter the game.</div>
+        <div class="modal-field">
+          <label>Private Key</label>
+          <textarea id="login-privkey" rows="3" placeholder="Paste your private key here..."></textarea>
+        </div>
+        <div class="modal-field">
+          <label>Nickname (can change)</label>
+          <input type="text" id="login-nickname" maxlength="16" placeholder="EnterYourName"/>
+        </div>
+        <div class="modal-field">
+          <label>Player Color</label>
+          <div class="color-row" id="login-skin-colors"></div>
+        </div>
+        <div class="modal-err" id="login-error">❌ Invalid private key. Please check and try again.</div>
+        <button class="btn-auth-primary" id="btn-login-enter">ENTER GAME ▶</button>
+      </div>
+
     </div>
   </div>
 
+  <!-- ── GAME SCREEN ── -->
   <div id="game-screen">
-
     <div id="game-hud">
       <div class="hud-left">
         <div class="hud-logo">⛏ GRIND<span>FUN</span></div>
@@ -151,7 +203,6 @@
       </div>
     </div>
 
-    <!-- E KEY SHOP OVERLAY -->
     <div id="shop-overlay">
       <div class="shop-overlay-box">
         <div class="shop-overlay-header">
@@ -164,6 +215,10 @@
     </div>
 
     <div id="game-sidebar">
+      <div class="side-section">
+        <div class="side-title">Wallet</div>
+        <div id="wallet-display" class="wallet-sidebar"></div>
+      </div>
       <div class="side-section">
         <div class="side-title">Block Values</div>
         <div id="block-legend"></div>
@@ -193,11 +248,12 @@
         </div>
       </div>
     </div>
-
   </div>
 
   <div id="toast"></div>
 
+  <!-- Solana web3 from CDN — generates wallets in browser -->
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="gamedata.js"></script>
