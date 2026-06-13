@@ -3,20 +3,19 @@ const { generateWorld, getBlock, setBlock, BLOCKS, PICKS, WORLD_W, WORLD_H, WORL
 const MAX_PLAYERS = 60;
 let roomCounter = 1;
 
-// When a block respawns it picks a random block from this weighted pool
 const RESPAWN_POOL = [
-  [1,  35],  // Grass
-  [0,  18],  // Dirt
-  [2,   8],  // Sand
-  [4,  14],  // Stone
-  [5,   8],  // Coal
-  [6,   6],  // Iron Ore
-  [7,   4],  // Gold Ore
-  [8,   3],  // Redstone
-  [9,   2],  // Lapis
-  [10,  1],  // Emerald
-  [11,  1],  // Diamond
-  [12,  1],  // GrindFun Ore
+  [1,  35],
+  [0,  18],
+  [2,   8],
+  [4,  14],
+  [5,   8],
+  [6,   6],
+  [7,   4],
+  [8,   3],
+  [9,   2],
+  [10,  1],
+  [11,  1],
+  [12,  1],
 ];
 const POOL_TOTAL = RESPAWN_POOL.reduce((a,b) => a+b[1], 0);
 
@@ -90,7 +89,6 @@ class Room {
       player.points += B.pts;
       player.totalBlocks++;
 
-      // Respawn after 10 seconds as a RANDOM block — not the same one
       setTimeout(() => {
         if (getBlock(this.world, x, y, z) < 0) {
           const newBlockType = pickRespawnBlock();
