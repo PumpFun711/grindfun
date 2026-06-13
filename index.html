@@ -51,30 +51,10 @@
     <div class="section-title">MINE. EARN. GRIND.</div>
     <div class="section-sub">Jump straight in — no wallet needed. Pick your name, enter a server and start mining.</div>
     <div class="steps">
-      <div class="step">
-        <div class="step-num">01</div>
-        <span class="step-icon">🎮</span>
-        <div class="step-title">Create Your Character</div>
-        <div class="step-desc">Pick a nickname and jump straight into a server. No wallet, no signup — just play.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">02</div>
-        <span class="step-icon">⛏</span>
-        <div class="step-title">Mine Blocks</div>
-        <div class="step-desc">Walk around in first person, look at blocks and hold left click to mine. Rarer blocks are deeper underground.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">03</div>
-        <span class="step-icon">💎</span>
-        <div class="step-title">Earn Points</div>
-        <div class="step-desc">Every block gives you points. Rare ores like Diamond and $GRINDFUN Ore give massive point rewards.</div>
-      </div>
-      <div class="step">
-        <div class="step-num">04</div>
-        <span class="step-icon">🏆</span>
-        <div class="step-title">Upgrade & Dominate</div>
-        <div class="step-desc">Spend points on better pickaxes. The $GRINDFUN pickaxe mines 20x faster. Climb the server leaderboard.</div>
-      </div>
+      <div class="step"><div class="step-num">01</div><span class="step-icon">🎮</span><div class="step-title">Create Your Character</div><div class="step-desc">Pick a nickname and jump straight into a server. No wallet, no signup — just play.</div></div>
+      <div class="step"><div class="step-num">02</div><span class="step-icon">⛏</span><div class="step-title">Mine Blocks</div><div class="step-desc">Walk around in first person, look at blocks and hold left click to mine. Rarer blocks are deeper underground.</div></div>
+      <div class="step"><div class="step-num">03</div><span class="step-icon">💎</span><div class="step-title">Earn Points</div><div class="step-desc">Every block gives you points. Rare ores like Diamond and $GRINDFUN Ore give massive point rewards.</div></div>
+      <div class="step"><div class="step-num">04</div><span class="step-icon">🏆</span><div class="step-title">Upgrade & Dominate</div><div class="step-desc">Spend points on better pickaxes. The $GRINDFUN pickaxe mines 20x faster. Climb the server leaderboard.</div></div>
     </div>
   </section>
 
@@ -86,7 +66,7 @@
       <div class="control-card"><div class="control-key">SPACE</div><div class="control-desc">Jump</div></div>
       <div class="control-card"><div class="control-key">MOUSE</div><div class="control-desc">Look around</div></div>
       <div class="control-card"><div class="control-key">LEFT CLICK</div><div class="control-desc">Mine block</div></div>
-      <div class="control-card"><div class="control-key">HOLD CLICK</div><div class="control-desc">Keep mining</div></div>
+      <div class="control-card"><div class="control-key">E</div><div class="control-desc">Open shop</div></div>
       <div class="control-card"><div class="control-key">ESC</div><div class="control-desc">Release mouse</div></div>
     </div>
   </section>
@@ -151,6 +131,8 @@
         <div class="hud-stat">Blocks: <span id="hud-blocks">0</span></div>
         <div class="hud-sep">|</div>
         <div class="hud-stat">Pickaxe: <span id="hud-pick">Wood</span></div>
+        <div class="hud-sep">|</div>
+        <button class="hud-shop-btn" onclick="Game.toggleShop()">⛏ SHOP [E]</button>
         <button class="hud-leave" id="btn-leave">✕ Leave</button>
       </div>
     </div>
@@ -169,13 +151,25 @@
       </div>
     </div>
 
+    <!-- E KEY SHOP OVERLAY -->
+    <div id="shop-overlay">
+      <div class="shop-overlay-box">
+        <div class="shop-overlay-header">
+          <div class="shop-overlay-title">⛏ PICKAXE SHOP</div>
+          <div class="shop-overlay-pts">Your points: <span id="shop-pts">0</span></div>
+          <button class="shop-overlay-close" onclick="Game.closeShop()">✕ Close [E]</button>
+        </div>
+        <div class="shop-overlay-items" id="shop-overlay-items"></div>
+      </div>
+    </div>
+
     <div id="game-sidebar">
       <div class="side-section">
         <div class="side-title">Block Values</div>
         <div id="block-legend"></div>
       </div>
       <div class="side-section">
-        <div class="side-title">Pickaxe Shop</div>
+        <div class="side-title">Quick Shop</div>
         <div id="shop-list"></div>
       </div>
       <div class="side-section">
@@ -194,7 +188,8 @@
           <span><b>SPACE</b> Jump</span>
           <span><b>MOUSE</b> Look</span>
           <span><b>CLICK</b> Mine</span>
-          <span><b>ESC</b> Unlock mouse</span>
+          <span><b>E</b> Shop</span>
+          <span><b>ESC</b> Unlock</span>
         </div>
       </div>
     </div>
