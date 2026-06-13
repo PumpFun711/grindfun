@@ -8,43 +8,31 @@ const UI = {
   selectedSkin: SKIN_COLORS[0],
 
   init() {
-    // Play buttons
     document.getElementById('btn-connect-nav').onclick = () => this.openCharModal();
     document.getElementById('btn-play-now').onclick = () => this.openCharModal();
     document.getElementById('btn-spectate').onclick = () => showToast('👁 Spectate mode coming soon!');
 
-    // Character modal
     document.getElementById('modal-char-close').onclick = () => this.closeCharModal();
     document.getElementById('btn-enter-world').onclick = () => this.enterWorld();
     document.getElementById('modal-char').onclick = (e) => {
       if (e.target === document.getElementById('modal-char')) this.closeCharModal();
     };
 
-    // Leave button
     document.getElementById('btn-leave').onclick = () => {
       if (confirm('Leave the server?')) Game.leave();
     };
 
-    // CA copy
     document.getElementById('ca-copy').onclick = () => {
       navigator.clipboard.writeText('$GRINDFUN').catch(() => {});
       showToast('📋 $GRINDFUN copied!');
     };
 
-    // Build color picker
     this.buildSkinPicker();
-
-    // Build landing page content
     this.buildPickaxeGrid();
     this.buildBlockGrid();
-
-    // Animate live count
     this.animateLiveCount();
-
-    // Build bg canvas animation
     this.initBgCanvas();
 
-    // Init game engine
     Game.init();
   },
 
@@ -78,21 +66,17 @@ const UI = {
     const nickname = document.getElementById('char-nickname').value.trim() || 'GrindFun';
     this.closeCharModal();
 
-    // Store on Player before game init
     Player.nickname = nickname;
     Player.skinColor = this.selectedSkin;
 
-    // Show game screen
     document.getElementById('game-screen').classList.add('active');
 
-    // Join server
     Network.join({
       nickname,
       skinColor: this.selectedSkin
     });
   },
 
-  // ── LANDING PAGE ──
   buildPickaxeGrid() {
     const el = document.getElementById('picks-grid');
     if (!el) return;
@@ -149,7 +133,6 @@ const UI = {
     }, 3000);
   },
 
-  // ── BACKGROUND CANVAS — rotating 3D blocks preview ──
   initBgCanvas() {
     const canvas = document.getElementById('bg-canvas');
     if (!canvas) return;
@@ -157,11 +140,12 @@ const UI = {
     let W, H, t = 0;
 
     const COLORS = [
-      '#5a8c3e','#8B6914','#888888','#333333',
+      '#5a8c3e','#8B6914','#888888','#222222',
       '#c0896e','#d4af37','#4fc3f7','#00ff88'
     ];
 
     const blocks = [];
+
     function buildBlocks() {
       blocks.length = 0;
       for (let i = 0; i < 40; i++) {
@@ -173,7 +157,7 @@ const UI = {
           speed: 0.2 + Math.random() * 0.5,
           rot: Math.random() * Math.PI * 2,
           rotSpeed: (Math.random() - 0.5) * 0.02,
-          alpha: 0.1 + Math.random() * 0.3
+          alpha: 0.08 + Math.random() * 0.2
         });
       }
     }
@@ -191,19 +175,12 @@ const UI = {
       ctx.translate(b.x, b.y);
       ctx.rotate(b.rot);
       ctx.globalAlpha = b.alpha;
-
-      // Top face
       ctx.fillStyle = b.color;
       ctx.fillRect(-b.size/2, -b.size/2, b.size, b.size);
-
-      // Right face (darker)
       ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.fillRect(b.size/2 - b.size*0.2, -b.size/2, b.size*0.2, b.size);
-
-      // Bottom face (darkest)
       ctx.fillStyle = 'rgba(0,0,0,0.4)';
       ctx.fillRect(-b.size/2, b.size/2 - b.size*0.2, b.size, b.size*0.2);
-
       ctx.globalAlpha = 1;
       ctx.restore();
     }
@@ -211,17 +188,14 @@ const UI = {
     function loop() {
       requestAnimationFrame(loop);
       t += 0.016;
-
       ctx.clearRect(0, 0, W, H);
 
-      // Dark gradient bg
       const grad = ctx.createLinearGradient(0, 0, 0, H);
       grad.addColorStop(0, '#0a1a0a');
       grad.addColorStop(1, '#050a05');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
-      // Floating blocks
       blocks.forEach(b => {
         b.y -= b.speed;
         b.rot += b.rotSpeed;
@@ -232,7 +206,6 @@ const UI = {
         drawBlock(b);
       });
 
-      // Scanlines overlay
       ctx.fillStyle = 'rgba(0,0,0,0.03)';
       for (let y = 0; y < H; y += 4) {
         ctx.fillRect(0, y, W, 2);
