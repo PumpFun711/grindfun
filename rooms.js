@@ -4,18 +4,8 @@ const MAX_PLAYERS = 60;
 let roomCounter = 1;
 
 const RESPAWN_POOL = [
-  [1,  35],
-  [0,  18],
-  [2,   8],
-  [4,  14],
-  [5,   8],
-  [6,   6],
-  [7,   4],
-  [8,   3],
-  [9,   2],
-  [10,  1],
-  [11,  1],
-  [12,  1],
+  [1,35],[0,18],[2,8],[4,14],[5,8],
+  [6,6],[7,4],[8,3],[9,2],[10,1],[11,1],[12,1]
 ];
 const POOL_TOTAL = RESPAWN_POOL.reduce((a,b) => a+b[1], 0);
 
@@ -43,9 +33,10 @@ class Room {
 
   addPlayer(socketId, data) {
     this.players.set(socketId, {
-      id: socketId,
-      nickname: data.nickname,
-      skinColor: data.skinColor,
+      id:            socketId,
+      nickname:      data.nickname,
+      skinColor:     data.skinColor,
+      walletAddress: data.walletAddress || 'unknown',
       x: data.x, y: data.y, z: data.z,
       rotY: 0,
       points: 0,
@@ -57,8 +48,8 @@ class Room {
   }
 
   removePlayer(socketId) { this.players.delete(socketId); }
-  getPlayer(socketId) { return this.players.get(socketId); }
-  getPlayersData() { return Array.from(this.players.values()); }
+  getPlayer(socketId)    { return this.players.get(socketId); }
+  getPlayersData()       { return Array.from(this.players.values()); }
 
   updatePlayer(socketId, data) {
     const p = this.players.get(socketId);
@@ -89,16 +80,17 @@ class Room {
       player.points += B.pts;
       player.totalBlocks++;
 
+      // Respawn as random block after 10 seconds
       setTimeout(() => {
         if (getBlock(this.world, x, y, z) < 0) {
-          const newBlockType = pickRespawnBlock();
-          setBlock(this.world, x, y, z, newBlockType);
+          const newType = pickRespawnBlock();
+          setBlock(this.world, x, y, z, newType);
         }
       }, 10000);
 
       return {
-        broken: true,
-        points: B.pts,
+        broken:       true,
+        points:       B.pts,
         playerPoints: player.points,
         playerBlocks: player.totalBlocks,
         blockType
@@ -106,8 +98,8 @@ class Room {
     }
 
     return {
-      broken: false,
-      hitsLeft: hitsNeeded - this.cracks[key],
+      broken:     false,
+      hitsLeft:   hitsNeeded - this.cracks[key],
       hitsNeeded
     };
   }
@@ -128,13 +120,14 @@ class Room {
 
   getLeaderboard() {
     return Array.from(this.players.values())
-      .sort((a, b) => b.points - a.points)
+      .sort((a,b) => b.points - a.points)
       .slice(0, 10)
       .map(p => ({
-        nickname: p.nickname,
-        points: p.points,
-        pickaxe: p.pickaxe,
-        totalBlocks: p.totalBlocks
+        nickname:      p.nickname,
+        walletAddress: p.walletAddress,
+        points:        p.points,
+        pickaxe:       p.pickaxe,
+        totalBlocks:   p.totalBlocks
       }));
   }
 }
@@ -144,7 +137,10 @@ class RoomManager {
 
   joinRoom(socketId, playerData) {
     for (const room of this.rooms.values()) {
-      if (!room.isFull()) { room.addPlayer(socketId, playerData); return room; }
+      if (!room.isFull()) {
+        room.addPlayer(socketId, playerData);
+        return room;
+      }
     }
     const roomId = `room_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const room = new Room(roomId);
@@ -153,9 +149,9 @@ class RoomManager {
     return room;
   }
 
-  getRoom(roomId) { return this.rooms.get(roomId); }
+  getRoom(roomId)    { return this.rooms.get(roomId); }
   removeRoom(roomId) { this.rooms.delete(roomId); }
-  getAllRooms() { return Array.from(this.rooms.values()); }
+  getAllRooms()       { return Array.from(this.rooms.values()); }
   getRoomStats() {
     return Array.from(this.rooms.values()).map(r => ({
       name: r.name, players: r.getPlayerCount()
