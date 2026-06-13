@@ -1,26 +1,20 @@
-// First person player controller
 const Player = {
   camera: null,
   scene: null,
   worldData: null,
 
-  // Position
   x: 8, y: 20, z: 8,
   velY: 0,
   onGround: false,
 
-  // Look
-  rotY: 0,  // horizontal
-  rotX: 0,  // vertical (pitch)
+  rotY: 0,
+  rotX: 0,
 
-  // State
   isWalking: false,
-  isSprinting: false,
   isPointerLocked: false,
   nickname: 'Player',
   skinColor: '#00ff88',
 
-  // Settings
   SPEED: 0.08,
   SPRINT_SPEED: 0.14,
   JUMP_FORCE: 0.18,
@@ -28,13 +22,13 @@ const Player = {
   PLAYER_HEIGHT: 1.7,
   EYE_HEIGHT: 1.6,
 
-  // Input
   keys: {},
 
-  // Pickaxe mesh
   pickaxeMesh: null,
   pickaxeSwing: 0,
   isMining: false,
+  bobTime: 0,
+  bobOffset: 0,
 
   init(camera, scene, worldData, nickname, skinColor) {
     this.camera = camera;
@@ -43,7 +37,6 @@ const Player = {
     this.nickname = nickname;
     this.skinColor = skinColor;
 
-    // Find surface spawn
     this.x = 8 + Math.random() * 4;
     this.z = 8 + Math.random() * 4;
     this.y = this.findSurface(Math.floor(this.x), Math.floor(this.z)) + 2;
@@ -59,47 +52,69 @@ const Player = {
     for (let y = h - 1; y >= 0; y--) {
       if (World.getBlock(x, y, z) >= 0) return y;
     }
-    return 14;
+    return 10;
   },
 
   setupPointerLock() {
     const canvas = document.getElementById('game-canvas');
 
-    canvas.addEventListener('click', () => {
-      if (!this.isPointerLocked) {
-        canvas.requestPointerLock();
-      }
+    // Click anywhere on game screen to lock
+    document.getElementById('game-screen').addEventListener('click', () => {
+      canvas.requestPointerLock =
+        canvas.requestPointerLock ||
+        canvas.mozRequestPointerLock ||
+        canvas.webkitRequestPointerLock;
+      if (canvas.requestPointerLock) canvas.requestPointerLock();
     });
 
-    document.addEventListener('pointerlockchange', () => {
-      this.isPointerLocked = document.pointerLockElement === canvas;
+    // Handle lock change
+    const onLockChange = () => {
+      const locked = !!(
+        document.pointerLockElement === canvas ||
+        document.mozPointerLockElement === canvas ||
+        document.webkitPointerLockElement === canvas
+      );
+      this.isPointerLocked = locked;
       const ctp = document.getElementById('click-to-play');
-      if (this.isPointerLocked) {
+      if (!ctp) return;
+      if (locked) {
         ctp.classList.add('hidden');
       } else {
         ctp.classList.remove('hidden');
       }
+    };
+
+    document.addEventListener('pointerlockchange', onLockChange);
+    document.addEventListener('mozpointerlockchange', onLockChange);
+    document.addEventListener('webkitpointerlockchange', onLockChange);
+
+    document.addEventListener('pointerlockerror', () => {
+      console.warn('[PointerLock] Error — try clicking again');
+    });
+    document.addEventListener('mozpointerlockerror', () => {
+      console.warn('[PointerLock] Mozilla error');
     });
 
+    // Mouse look
     document.addEventListener('mousemove', (e) => {
       if (!this.isPointerLocked) return;
       const sens = 0.0018;
       this.rotY -= e.movementX * sens;
       this.rotX -= e.movementY * sens;
-      // Clamp vertical look
-      this.rotX = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, this.rotX));
+      this.rotX = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, this.rotX));
     });
   },
 
   setupKeyboard() {
     window.addEventListener('keydown', (e) => {
       this.keys[e.code] = true;
-      // Jump
-      if (e.code === 'Space' && this.onGround) {
-        this.velY = this.JUMP_FORCE;
-        this.onGround = false;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (this.onGround) {
+          this.velY = this.JUMP_FORCE;
+          this.onGround = false;
+        }
       }
-      e.code === 'Space' && e.preventDefault();
     });
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
@@ -107,7 +122,6 @@ const Player = {
   },
 
   buildPickaxe() {
-    // Build a simple pickaxe from Three.js geometry
     const group = new THREE.Group();
 
     // Handle
@@ -130,7 +144,6 @@ const Player = {
     tip.position.set(0.1, 0, -0.4);
     group.add(tip);
 
-    // Position in hand — bottom right of screen
     group.position.set(0.28, -0.28, -0.45);
     group.rotation.set(0.2, -0.4, 0.1);
 
@@ -141,6 +154,7 @@ const Player = {
   updatePickaxeColor(tier) {
     const colors = [0xa07840, 0xaaaaaa, 0xd4d4d4, 0xffd700, 0x4fc3f7, 0x00ff88];
     const color = colors[tier] || 0xaaaaaa;
+    if (!this.pickaxeMesh) return;
     this.pickaxeMesh.children.forEach((mesh, i) => {
       if (i > 0) mesh.material.color.setHex(color);
     });
@@ -166,40 +180,34 @@ const Player = {
     this.isWalking = moving;
 
     if (moving) {
-      const len = Math.sqrt(dx*dx + dz*dz);
-      dx = (dx/len) * speed;
-      dz = (dz/len) * speed;
+      const len = Math.sqrt(dx * dx + dz * dz);
+      dx = (dx / len) * speed;
+      dz = (dz / len) * speed;
 
-      // Collision X
       const newX = this.x + dx;
       if (!this.collidesAt(newX, this.y, this.z)) this.x = newX;
 
-      // Collision Z
       const newZ = this.z + dz;
       if (!this.collidesAt(this.x, this.y, newZ)) this.z = newZ;
-    }
 
-    // Head bob
-    if (moving && this.onGround) {
-      this.bobTime = (this.bobTime || 0) + 0.15;
+      // Head bob
+      this.bobTime += 0.15;
       this.bobOffset = Math.sin(this.bobTime) * 0.04;
     } else {
-      this.bobOffset = this.bobOffset ? this.bobOffset * 0.85 : 0;
+      this.bobOffset *= 0.85;
     }
   },
 
   applyGravity() {
     this.velY += this.GRAVITY;
     const newY = this.y + this.velY;
-
-    // Floor collision
     const floorY = this.getFloorY();
+
     if (newY <= floorY) {
       this.y = floorY;
       this.velY = 0;
       this.onGround = true;
     } else {
-      // Ceiling collision
       const ceilY = this.getCeilY();
       if (newY + this.PLAYER_HEIGHT > ceilY) {
         this.y = ceilY - this.PLAYER_HEIGHT;
@@ -248,27 +256,24 @@ const Player = {
 
   animatePickaxe() {
     if (!this.pickaxeMesh) return;
+    const t = Date.now() * 0.001;
     if (this.isMining) {
       this.pickaxeSwing += 0.25;
       this.pickaxeMesh.rotation.x = 0.2 + Math.sin(this.pickaxeSwing) * 0.4;
       this.pickaxeMesh.position.y = -0.28 + Math.abs(Math.sin(this.pickaxeSwing)) * 0.05;
     } else {
-      // Idle bob
-      const t = Date.now() * 0.001;
       this.pickaxeMesh.rotation.x = 0.2 + Math.sin(t * 1.5) * 0.02;
       this.pickaxeMesh.position.y = -0.28 + Math.sin(t * 1.5) * 0.008;
-      if (this.isWalking) {
-        this.pickaxeMesh.rotation.z = 0.1 + Math.sin(t * 6) * 0.04;
-      } else {
-        this.pickaxeMesh.rotation.z = 0.1;
-      }
+      this.pickaxeMesh.rotation.z = this.isWalking
+        ? 0.1 + Math.sin(t * 6) * 0.04
+        : 0.1;
     }
   },
 
   updateCamera() {
     this.camera.position.set(
       this.x,
-      this.y + this.EYE_HEIGHT + (this.bobOffset || 0),
+      this.y + this.EYE_HEIGHT + this.bobOffset,
       this.z
     );
     this.camera.rotation.order = 'YXZ';
@@ -277,6 +282,12 @@ const Player = {
   },
 
   getPosition() {
-    return { x: this.x, y: this.y, z: this.z, rotY: this.rotY, isWalking: this.isWalking };
+    return {
+      x: this.x,
+      y: this.y,
+      z: this.z,
+      rotY: this.rotY,
+      isWalking: this.isWalking
+    };
   }
 };
