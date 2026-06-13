@@ -8,7 +8,6 @@
 </head>
 <body>
 
-  <!-- ── NAV ── -->
   <nav id="nav">
     <a class="nav-logo" href="#">
       <span class="nav-logo-icon">⛏</span>
@@ -28,7 +27,6 @@
     </div>
   </nav>
 
-  <!-- ── HERO ── -->
   <section id="hero">
     <canvas id="bg-canvas"></canvas>
     <div class="hero-overlay">
@@ -48,7 +46,6 @@
     </div>
   </section>
 
-  <!-- ── HOW TO PLAY ── -->
   <section id="how">
     <div class="section-label">How it works</div>
     <div class="section-title">MINE. EARN. GRIND.</div>
@@ -81,7 +78,6 @@
     </div>
   </section>
 
-  <!-- ── CONTROLS ── -->
   <section id="controls-section">
     <div class="section-label">Controls</div>
     <div class="section-title">HOW TO PLAY</div>
@@ -95,7 +91,6 @@
     </div>
   </section>
 
-  <!-- ── PICKAXES ── -->
   <section id="picks">
     <div class="section-label">Gear progression</div>
     <div class="section-title">PICKAXE TIERS</div>
@@ -103,7 +98,6 @@
     <div class="picks-grid" id="picks-grid"></div>
   </section>
 
-  <!-- ── BLOCKS ── -->
   <section id="blocks-section">
     <div class="section-label">What you'll mine</div>
     <div class="section-title">BLOCK TYPES</div>
@@ -111,7 +105,6 @@
     <div class="blocks-grid" id="blocks-grid"></div>
   </section>
 
-  <!-- ── FOOTER ── -->
   <footer>
     <div class="footer-logo">GRIND<span>FUN</span> <span style="color:rgba(255,255,255,0.2);font-size:12px">$GRINDFUN</span></div>
     <div class="footer-links">
@@ -123,7 +116,6 @@
     <div class="footer-copy">GrindFun — built by grinders, for grinders.</div>
   </footer>
 
-  <!-- ── CHARACTER MODAL ── -->
   <div id="modal-char" class="modal-overlay">
     <div class="modal">
       <button class="modal-close" id="modal-char-close">×</button>
@@ -141,10 +133,8 @@
     </div>
   </div>
 
-  <!-- ── GAME SCREEN ── -->
   <div id="game-screen">
 
-    <!-- HUD -->
     <div id="game-hud">
       <div class="hud-left">
         <div class="hud-logo">⛏ GRIND<span>FUN</span></div>
@@ -165,22 +155,20 @@
       </div>
     </div>
 
-    <!-- 3D Canvas -->
     <canvas id="game-canvas"></canvas>
 
-    <!-- Crosshair -->
     <div id="crosshair">
       <div class="ch-h"></div>
       <div class="ch-v"></div>
     </div>
 
-    <!-- Block hit progress -->
     <div id="mine-progress">
-      <div id="mine-bar"></div>
       <div id="mine-label">MINING...</div>
+      <div id="mine-bar-bg">
+        <div id="mine-bar"></div>
+      </div>
     </div>
 
-    <!-- Sidebar -->
     <div id="game-sidebar">
       <div class="side-section">
         <div class="side-title">Block Values</div>
@@ -196,7 +184,6 @@
       </div>
     </div>
 
-    <!-- Click to play overlay -->
     <div id="click-to-play">
       <div class="ctp-box">
         <div class="ctp-icon">⛏</div>
@@ -214,10 +201,8 @@
 
   </div>
 
-  <!-- Toast -->
   <div id="toast"></div>
 
-  <!-- Three.js from CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="gamedata.js"></script>
