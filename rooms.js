@@ -38,11 +38,8 @@ class Room {
   updatePlayer(socketId, data) {
     const p = this.players.get(socketId);
     if (!p) return;
-    p.x = data.x;
-    p.y = data.y;
-    p.z = data.z;
-    p.rotY = data.rotY;
-    p.isWalking = data.isWalking;
+    p.x = data.x; p.y = data.y; p.z = data.z;
+    p.rotY = data.rotY; p.isWalking = data.isWalking;
   }
 
   mineBlock(socketId, x, y, z) {
@@ -66,6 +63,16 @@ class Room {
       delete this.cracks[key];
       player.points += B.pts;
       player.totalBlocks++;
+
+      // Queue server-side respawn for ores
+      if (blockType >= 4) {
+        setTimeout(() => {
+          if (getBlock(this.world, x, y, z) < 0) {
+            setBlock(this.world, x, y, z, blockType);
+          }
+        }, 30000);
+      }
+
       return {
         broken: true,
         points: B.pts,
@@ -87,12 +94,10 @@ class Room {
     if (!player) return { success: false, message: 'Player not found' };
     if (tier !== player.pickaxe + 1) return { success: false, message: 'Must upgrade in order' };
     if (tier >= PICKS.length) return { success: false, message: 'Max tier reached' };
-
     const pick = PICKS[tier];
     if (player.points < pick.cost) {
       return { success: false, message: `Need ${pick.cost.toLocaleString()} pts. You have ${player.points.toLocaleString()}.` };
     }
-
     player.points -= pick.cost;
     player.pickaxe = tier;
     return { success: true, newPoints: player.points };
@@ -102,12 +107,7 @@ class Room {
     return Array.from(this.players.values())
       .sort((a, b) => b.points - a.points)
       .slice(0, 10)
-      .map(p => ({
-        nickname: p.nickname,
-        points: p.points,
-        pickaxe: p.pickaxe,
-        totalBlocks: p.totalBlocks
-      }));
+      .map(p => ({ nickname: p.nickname, points: p.points, pickaxe: p.pickaxe, totalBlocks: p.totalBlocks }));
   }
 }
 
@@ -116,10 +116,7 @@ class RoomManager {
 
   joinRoom(socketId, playerData) {
     for (const room of this.rooms.values()) {
-      if (!room.isFull()) {
-        room.addPlayer(socketId, playerData);
-        return room;
-      }
+      if (!room.isFull()) { room.addPlayer(socketId, playerData); return room; }
     }
     const roomId = `room_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const room = new Room(roomId);
@@ -132,9 +129,7 @@ class RoomManager {
   removeRoom(roomId) { this.rooms.delete(roomId); }
   getAllRooms() { return Array.from(this.rooms.values()); }
   getRoomStats() {
-    return Array.from(this.rooms.values()).map(r => ({
-      name: r.name, players: r.getPlayerCount()
-    }));
+    return Array.from(this.rooms.values()).map(r => ({ name: r.name, players: r.getPlayerCount() }));
   }
 }
 
