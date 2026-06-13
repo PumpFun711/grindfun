@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GrindFun — Leaderboard</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{--green:#00ff88;--gold:#ffd700;--bg:#0a0a14;}
+    body{background:var(--bg);color:#fff;font-family:'Courier New',monospace;min-height:100vh;}
+
+    /* NAV */
+    nav{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:rgba(8,8,18,0.95);border-bottom:1px solid rgba(0,255,136,0.12);position:sticky;top:0;z-index:10;}
+    .nav-logo{font-weight:900;font-size:18px;color:#fff;letter-spacing:3px;text-decoration:none;}
+    .nav-logo span{color:var(--green);}
+    .nav-links{display:flex;gap:24px;}
+    .nav-links a{color:rgba(255,255,255,0.55);text-decoration:none;font-size:13px;transition:color .2s;}
+    .nav-links a:hover,.nav-links a.active{color:var(--green);}
+
+    /* HERO */
+    .lb-hero{text-align:center;padding:60px 20px 40px;}
+    .lb-hero h1{font-size:clamp(32px,6vw,64px);font-weight:900;letter-spacing:4px;text-shadow:0 0 40px rgba(0,255,136,0.4);}
+    .lb-hero h1 span{color:var(--green);}
+    .lb-hero p{color:rgba(255,255,255,0.45);font-size:14px;margin-top:10px;letter-spacing:1px;}
+
+    /* TABS */
+    .tabs{display:flex;justify-content:center;gap:8px;margin-bottom:40px;}
+    .tab{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);padding:10px 28px;border-radius:4px;cursor:pointer;font-family:'Courier New',monospace;font-size:13px;letter-spacing:1px;transition:all .2s;}
+    .tab:hover{border-color:var(--green);color:var(--green);}
+    .tab.active{background:rgba(0,255,136,0.1);border-color:var(--green);color:var(--green);}
+
+    /* TABLE */
+    .lb-wrap{max-width:900px;margin:0 auto;padding:0 20px 80px;}
+    .lb-table{width:100%;border-collapse:collapse;}
+    .lb-table th{text-align:left;padding:10px 16px;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:rgba(0,255,136,0.5);border-bottom:1px solid rgba(0,255,136,0.15);}
+    .lb-table td{padding:14px 16px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);}
+    .lb-table tr:hover td{background:rgba(255,255,255,0.02);}
+
+    /* Rank */
+    .rank{font-weight:900;font-size:16px;width:50px;}
+    .rank-1{color:#ffd700;}
+    .rank-2{color:#c0c0c0;}
+    .rank-3{color:#cd7f32;}
+    .rank-n{color:rgba(255,255,255,0.3);}
+
+    /* Player */
+    .player-name{font-weight:700;color:#fff;}
+    .player-wallet{font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px;}
+
+    /* Points */
+    .pts{color:var(--gold);font-weight:700;font-size:15px;}
+
+    /* Pickaxe */
+    .pick-badge{display:inline-block;padding:3px 10px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:1px;}
+
+    /* Blocks */
+    .blocks{color:rgba(255,255,255,0.4);font-size:12px;}
+
+    /* Loading */
+    .loading{text-align:center;padding:60px;color:rgba(255,255,255,0.3);font-size:14px;}
+    .error{text-align:center;padding:60px;color:#ff4444;font-size:14px;}
+
+    /* Stats bar */
+    .stats-bar{display:flex;gap:16px;justify-content:center;margin-bottom:40px;flex-wrap:wrap;}
+    .stat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:16px 24px;text-align:center;min-width:140px;}
+    .stat-card .val{font-size:24px;font-weight:900;color:var(--green);}
+    .stat-card .lbl{font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;letter-spacing:1px;text-transform:uppercase;}
+
+    /* Last updated */
+    .last-updated{text-align:center;color:rgba(255,255,255,0.2);font-size:11px;margin-bottom:20px;}
+
+    footer{text-align:center;padding:32px;color:rgba(255,255,255,0.15);font-size:12px;border-top:1px solid rgba(255,255,255,0.05);}
+    footer a{color:var(--green);text-decoration:none;}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">GRIND<span>FUN</span></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/leaderboard" class="active">Leaderboard</a>
+    <a href="/" onclick="document.getElementById('btn-play-now')?.click()">Play Now</a>
+  </div>
+</nav>
+
+<div class="lb-hero">
+  <h1>GRIND<span>FUN</span> LEADERBOARD</h1>
+  <p>Top miners ranked by points — wallet addresses used for reward distribution</p>
+</div>
+
+<div class="stats-bar" id="stats-bar">
+  <div class="stat-card"><div class="val" id="stat-players">-</div><div class="lbl">Total Players</div></div>
+  <div class="stat-card"><div class="val" id="stat-blocks">-</div><div class="lbl">Blocks Mined</div></div>
+  <div class="stat-card"><div class="val" id="stat-points">-</div><div class="lbl">Total Points</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('all', this)">🏆 All Time</button>
+  <button class="tab" onclick="switchTab('daily', this)">📅 Today</button>
+</div>
+
+<div class="lb-wrap">
+  <div class="last-updated" id="last-updated"></div>
+  <div id="lb-content" class="loading">Loading leaderboard...</div>
+</div>
+
+<footer>
+  GrindFun $GRINDFUN — <a href="/">Play Now</a> · Updates every 30 seconds
+</footer>
+
+<script>
+  let currentTab = 'all';
+  let allData = [];
+  let dailyData = [];
+
+  const PICK_NAMES  = ['Wood','Stone','Iron','Gold','Diamond','$GRINDFUN'];
+  const PICK_COLORS = ['#c8a060','#aaaaaa','#d4d4d4','#ffd700','#4fc3f7','#00ff88'];
+
+  async function fetchData() {
+    try {
+      const [all, daily] = await Promise.all([
+        fetch('/api/leaderboard').then(r => r.json()),
+        fetch('/api/leaderboard/daily').then(r => r.json())
+      ]);
+      allData   = all;
+      dailyData = daily;
+      updateStats(all);
+      render();
+      document.getElementById('last-updated').textContent =
+        'Last updated: ' + new Date().toLocaleTimeString();
+    } catch(e) {
+      document.getElementById('lb-content').innerHTML =
+        '<div class="error">❌ Failed to load leaderboard. Try refreshing.</div>';
+    }
+  }
+
+  function updateStats(data) {
+    document.getElementById('stat-players').textContent = data.length.toLocaleString();
+    document.getElementById('stat-blocks').textContent  =
+      data.reduce((a,p) => a + (p.total_blocks||0), 0).toLocaleString();
+    document.getElementById('stat-points').textContent  =
+      data.reduce((a,p) => a + (p.points||0), 0).toLocaleString();
+  }
+
+  function render() {
+    const data = currentTab === 'all' ? allData : dailyData;
+    if (!data || data.length === 0) {
+      document.getElementById('lb-content').innerHTML =
+        '<div class="loading">No data yet — be the first to grind! 🎮</div>';
+      return;
+    }
+
+    const rows = data.map((p, i) => {
+      const rank = i + 1;
+      const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-n';
+      const rankIcon  = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+      const tier      = p.pickaxe || 0;
+      const pickColor = PICK_COLORS[tier] || '#aaaaaa';
+      const pickName  = PICK_NAMES[tier]  || 'Wood';
+      const wallet    = p.wallet_address  || p.walletAddress || '';
+      const shortWallet = wallet.length > 8
+        ? wallet.slice(0,6)+'...'+wallet.slice(-4)
+        : wallet;
+
+      return `<tr>
+        <td><span class="rank ${rankClass}">${rankIcon}</span></td>
+        <td>
+          <div class="player-name">${escHtml(p.nickname)}</div>
+          <div class="player-wallet">${shortWallet}</div>
+        </td>
+        <td><span class="pts">${(p.points||0).toLocaleString()}</span></td>
+        <td><span class="pick-badge" style="color:${pickColor};border:1px solid ${pickColor}22;background:${pickColor}11">${pickName}</span></td>
+        ${currentTab === 'all' ? `<td><span class="blocks">${(p.total_blocks||0).toLocaleString()}</span></td>` : ''}
+      </tr>`;
+    }).join('');
+
+    document.getElementById('lb-content').innerHTML = `
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th>Points</th>
+            <th>Pickaxe</th>
+            ${currentTab === 'all' ? '<th>Blocks Mined</th>' : ''}
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  function switchTab(tab, el) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    render();
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  fetchData();
+  setInterval(fetchData, 30000);
+</script>
+</body>
+</html>
