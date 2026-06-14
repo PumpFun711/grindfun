@@ -4,6 +4,8 @@ const SKIN_COLORS = [
   '#ff4444','#aa44ff','#ffd700','#ffffff'
 ];
 
+const CA = 'B3SUGXHxn4aEfHzT6nLpzrRKTUmCjA4AsDeHUgCEpump';
+
 const UI = {
   selectedSkin:    SKIN_COLORS[0],
   walletPublicKey: null,
@@ -14,7 +16,6 @@ const UI = {
     document.getElementById('btn-play-now').onclick    = () => this.openAuth();
     document.getElementById('btn-spectate').onclick    = () => showToast('👁 Spectate mode coming soon!');
 
-    // Auth buttons
     document.getElementById('btn-go-create').onclick      = () => this.showStep('create');
     document.getElementById('btn-back-create').onclick    = () => this.showStep('choose');
     document.getElementById('btn-generate-wallet').onclick= () => this.generateWallet();
@@ -22,30 +23,28 @@ const UI = {
     document.getElementById('btn-phantom-connect').onclick= () => this.connectPhantom();
     document.getElementById('btn-phantom-enter').onclick  = () => this.enterWorld();
 
-    // Seed checkbox
     document.getElementById('seed-confirm-check').onchange = (e) => {
       document.getElementById('btn-confirm-seed').disabled = !e.target.checked;
     };
 
-    // Leave
     document.getElementById('btn-leave').onclick = () => {
       if (confirm('Leave the server?')) Game.leave();
     };
 
     // CA copy
-    document.getElementById('ca-copy').onclick = () => {
-      navigator.clipboard.writeText('$GRINDFUN').catch(()=>{});
-      showToast('📋 $GRINDFUN copied!');
-    };
+    const caPill = document.getElementById('ca-copy');
+    if (caPill) {
+      caPill.onclick = () => {
+        navigator.clipboard.writeText(CA).catch(()=>{});
+        showToast('📋 CA copied!');
+      };
+    }
 
-    // Color pickers
     this.buildColorPicker('create-skin-colors');
     this.buildColorPicker('phantom-skin-colors');
 
-    // Landing content
     this.buildPickaxeGrid();
     this.buildBlockGrid();
-    this.animateLiveCount();
     this.initBgCanvas();
 
     Game.init();
@@ -65,20 +64,15 @@ const UI = {
     document.getElementById(`auth-step-${step}`).classList.add('active');
   },
 
-  // ── STEP 1: Generate wallet ──
   generateWallet() {
     const nickname = document.getElementById('create-nickname').value.trim();
     if (!nickname) { showToast('❌ Enter a nickname first'); return; }
     this.playerNickname = nickname;
 
-    // Generate Solana keypair
     const keypair = solanaWeb3.Keypair.generate();
     this.walletPublicKey = keypair.publicKey.toString();
-
-    // Encode secret key as base58
     const privateKeyB58 = this.uint8ArrayToBase58(keypair.secretKey);
 
-    // Show key once
     document.getElementById('seed-display').textContent = privateKeyB58;
     document.getElementById('wallet-addr-display').textContent = this.walletPublicKey;
     document.getElementById('seed-confirm-check').checked = false;
@@ -87,12 +81,10 @@ const UI = {
     this.showStep('seed');
   },
 
-  // ── STEP 2: After saving key, connect Phantom ──
   async connectPhantomAfterCreate() {
     await this.connectPhantom();
   },
 
-  // ── Connect Phantom wallet ──
   async connectPhantom() {
     const phantom = window.solana;
 
@@ -104,16 +96,11 @@ const UI = {
 
     try {
       this.showStep('connecting');
-
       const resp = await phantom.connect();
       this.walletPublicKey = resp.publicKey.toString();
-
-      // Show nickname step
       document.getElementById('connected-addr-display').textContent =
         this.walletPublicKey.slice(0,6) + '...' + this.walletPublicKey.slice(-4);
-
       this.showStep('nickname');
-
     } catch(e) {
       console.error(e);
       showToast('❌ Phantom connection cancelled.');
@@ -121,7 +108,6 @@ const UI = {
     }
   },
 
-  // ── Enter world ──
   enterWorld() {
     const nicknameInput = document.getElementById('phantom-nickname');
     const nickname = nicknameInput ? nicknameInput.value.trim() : this.playerNickname;
@@ -134,7 +120,6 @@ const UI = {
 
     document.getElementById('game-screen').classList.add('active');
 
-    // Show wallet in sidebar (shortened)
     const wd = document.getElementById('wallet-display');
     if (wd && this.walletPublicKey) {
       const short = this.walletPublicKey.slice(0,6)+'...'+this.walletPublicKey.slice(-4);
@@ -148,7 +133,6 @@ const UI = {
     });
   },
 
-  // ── BASE58 ──
   BASE58_ALPHABET: '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
 
   uint8ArrayToBase58(bytes) {
@@ -169,7 +153,6 @@ const UI = {
     return result;
   },
 
-  // ── COLOR PICKER ──
   buildColorPicker(containerId) {
     const el = document.getElementById(containerId);
     if (!el) return;
@@ -186,7 +169,6 @@ const UI = {
     });
   },
 
-  // ── LANDING ──
   buildPickaxeGrid() {
     const el = document.getElementById('picks-grid');
     if (!el) return;
@@ -219,16 +201,6 @@ const UI = {
         </div>
       </div>`;
     }).join('');
-  },
-
-  animateLiveCount() {
-    let base=847;
-    setInterval(()=>{
-      base+=Math.floor((Math.random()-.45)*3);
-      base=Math.max(600,Math.min(1200,base));
-      const el=document.getElementById('live-players');
-      if(el) el.textContent=base.toLocaleString()+' players online';
-    },3000);
   },
 
   initBgCanvas() {
